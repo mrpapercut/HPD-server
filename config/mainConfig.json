@@ -1,0 +1,22 @@
+{
+    "engine": {
+        "port": 10000,
+        "identifier": "HPFeedsNodeJSServer"
+    },
+    "webuiserver": {
+        "host": "",
+        "port": 3000
+    },
+    "sensors": [{
+        "id": "",
+        "name": ""
+    }],
+    "telegram": {
+        "botname": "",
+        "token": "",
+        "chat_id": ""
+    },
+    "virustotal": {
+        "apikey": ""
+    }
+}
