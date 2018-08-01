@@ -41,25 +41,28 @@ const feedParser = (socketData, verbose = false) => {
     const payloadOffset = packetIdentifierLength + 6;
     const payloadData =  new Uint8Array(socketData.buffer, payloadOffset);
 
-    let channelLength;
-    let channel;
     let binary;
     let binaryHash;
     let json;
 
-    if (packetType === 3) {
-        channelLength = dv.getUint8(payloadOffset);
-        channel = String.fromCharCode.apply(null, new Uint8Array(socketData.buffer, payloadOffset + 1, channelLength));
+    // Only process PUBLISH packets
+    if (packetType !== 3) {
+        return false;
+    }
 
-        if (channels.indexOf(channel) !== -1) {
-            if (channel === 'mwbinary.dionaea.sensorunique') {
-                binary = new Uint8Array(socketData.buffer, payloadOffset + 1 + channelLength);
-                binaryHash = md5sum(binary);
-            } else {
-                const jsonString = new Uint8Array(socketData.buffer, payloadOffset + 1 + channelLength);
-                json = JSON.parse(String.fromCharCode.apply(null, jsonString));
-            }
-        }
+    let channelLength = dv.getUint8(payloadOffset);
+    let channel = String.fromCharCode.apply(null, new Uint8Array(socketData.buffer, payloadOffset + 1, channelLength));
+
+    if (channels.indexOf(channel) === -1) {
+        return false;
+    }
+
+    if (channel === 'mwbinary.dionaea.sensorunique') {
+        binary = new Uint8Array(socketData.buffer, payloadOffset + 1 + channelLength);
+        binaryHash = md5sum(binary);
+    } else {
+        const jsonString = new Uint8Array(socketData.buffer, payloadOffset + 1 + channelLength);
+        json = JSON.parse(String.fromCharCode.apply(null, jsonString));
     }
 
     const feed = {
