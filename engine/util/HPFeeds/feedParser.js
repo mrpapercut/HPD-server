@@ -62,7 +62,11 @@ const feedParser = (socketData, verbose = false) => {
         binaryHash = md5sum(binary);
     } else {
         const jsonString = new Uint8Array(socketData.buffer, payloadOffset + 1 + channelLength);
-        json = JSON.parse(String.fromCharCode.apply(null, jsonString));
+        try {
+            json = JSON.parse(String.fromCharCode.apply(null, jsonString));
+        } catch(e) {
+            console.log(`Error parsing JSON: ${e}`, json);
+        }
     }
 
     const feed = {
