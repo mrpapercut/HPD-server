@@ -136,7 +136,7 @@ class HPDEngine {
     processJSONFeed(feed) {
         // Remap values to values of 'dionaea.connections' object
         if (feed.channel === 'dionaea.capture') {
-            feed.json = mapCaptureJson(feed);
+            feed.json = mapCaptureJson(feed.json);
         }
 
         // Enrich with geodata
