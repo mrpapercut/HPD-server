@@ -45,9 +45,14 @@ class Telegram {
 
         return fetch(url, {
             method: 'post',
-            body
+            body: JSON.stringify(body),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
     }
 }
 
-export default Telegram;
+// export default Telegram;
+const telegram = new Telegram();
+telegram.sendMessage('Hello world!');
