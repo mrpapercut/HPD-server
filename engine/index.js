@@ -75,7 +75,9 @@ class HPDEngine {
                 // Remove socket from stored sockets
                 delete this.liveSockets[socket.id];
 
-                this.processParsedFeed(parsedFeed);
+                if (parsedFeed) {
+                    this.processParsedFeed(parsedFeed);
+                }
             });
 
         }).listen(this.port);
@@ -103,9 +105,9 @@ class HPDEngine {
                 }
 
                 // Add common values
-                feed.json.connection_channel = feed.packetIdentifier;
+                feed.json.connection_channel = feed.channel;
                 feed.json.timestamp = +new Date();
-                feed.json.sensor = feed.identifier;
+                feed.json.sensor = feed.packetIdentifier;
 
                 if (feed.channel === 'mwbinary.dionaea.sensorunique') {
                     this.processBinaryFeed(feed);
