@@ -1,4 +1,4 @@
-import request from 'request';
+import fetch from 'node-fetch';
 
 import mainConfig from '../../config/mainConfig';
 
@@ -43,15 +43,8 @@ class Telegram {
     makeRequest(cmd, body) {
         const url = `${this.apiurl}bot${this.token}/${cmd}`;
 
-        return new Promise((resolve, reject) => {
-            request.post({
-                url,
-                body,
-                json: true
-            }, (err, res) => {
-                if (err) reject(err);
-                resolve(res.body);
-            })
+        return fetch(url, {
+            body: JSON.stringify(body)
         });
     }
 }
