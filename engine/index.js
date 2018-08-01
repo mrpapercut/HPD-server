@@ -59,6 +59,13 @@ class HPDEngine {
             // Accumulate socket data
             socket.on('data', data => {
                 this.liveSockets[socket.id].data = concatUint8Arrays(this.liveSockets[socket.id].data, data);
+
+                // For some reason, dionaea.connections and dionaea.capture don't send 'end' events
+                const parsedFeed = feedParser(data);
+
+                if (parsedFeed) {
+                    this.processParsedFeed(parsedFeed);
+                }
             });
 
             socket.on('end', data => {
