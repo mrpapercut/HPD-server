@@ -53,6 +53,4 @@ class Telegram {
     }
 }
 
-// export default Telegram;
-const telegram = new Telegram();
-telegram.sendMessage('Hello world!');
+export default Telegram;
