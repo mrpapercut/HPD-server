@@ -127,7 +127,7 @@ class HPDEngine {
             getVirusTotalData(feed.json.hash).then(vtdata => {
                 feed.json = Object.assign({}, feed.json, vtdata);
 
-                this.insertIntoElastic(feed.json);
+                this.insertIntoElastic(feed);
                 sendNotification(feed.json);
             });
         }

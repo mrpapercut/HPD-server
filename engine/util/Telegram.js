@@ -45,7 +45,7 @@ class Telegram {
 
         fetch(url, {
             method: 'post',
-            body: JSON.stringify(body)
+            body
         }).then(res => console.log(res));
     }
 }
