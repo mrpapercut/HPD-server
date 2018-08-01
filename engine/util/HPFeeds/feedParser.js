@@ -65,7 +65,7 @@ const feedParser = (socketData, verbose = false) => {
         try {
             json = JSON.parse(String.fromCharCode.apply(null, jsonString));
         } catch(e) {
-            console.log(`Error parsing JSON: ${e}`, json);
+            console.log(`Error parsing JSON: ${e}`, String.fromCharCode.apply(null, jsonString));
         }
     }
 
