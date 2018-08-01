@@ -20,7 +20,7 @@ class Telegram {
     }
 
     sendMessage(message) {
-        this.makeRequest('sendMessage', {
+        return this.makeRequest('sendMessage', {
             chat_id: mainConfig.telegram.chat_id,
             text: message
         });
@@ -43,10 +43,10 @@ class Telegram {
     makeRequest(cmd, body) {
         const url = `${this.apiurl}bot${this.token}/${cmd}`;
 
-        fetch(url, {
+        return fetch(url, {
             method: 'post',
             body
-        }).then(res => console.log(res));
+        });
     }
 }
 
