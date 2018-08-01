@@ -44,6 +44,7 @@ class Telegram {
         const url = `${this.apiurl}bot${this.token}/${cmd}`;
 
         return fetch(url, {
+            method: 'post',
             body: JSON.stringify(body)
         });
     }
