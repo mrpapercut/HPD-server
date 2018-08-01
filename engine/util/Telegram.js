@@ -43,10 +43,10 @@ class Telegram {
     makeRequest(cmd, body) {
         const url = `${this.apiurl}bot${this.token}/${cmd}`;
 
-        return fetch(url, {
+        fetch(url, {
             method: 'post',
             body: JSON.stringify(body)
-        });
+        }).then(res => console.log(res));
     }
 }
 
