@@ -9,6 +9,7 @@
  */
 
 import net from 'net';
+import elasticsearch from 'elasticsearch';
 
 import mainConfig from '../config/mainConfig';
 
@@ -21,6 +22,10 @@ import concatUint8Arrays from './util/HPFeeds/concatUint8Arrays';
 
 import writePayloadToFile from './util/writePayloadToFile';
 import mapCaptureJson from './util/mapCaptureJson';
+import sendNotification from './util/sendNotification';
+
+import getGeodata from './enrichers/getGeodata';
+import getVirusTotalData from './enrichers/getVirustotalData';
 
 class HPDEngine {
     constructor() {
@@ -30,6 +35,11 @@ class HPDEngine {
 
         this.liveSockets = {};
         this.counter = 0;
+
+        this.esclient = new elasticsearch.Client({
+            host: `http://${mainConfig.elastic.host}:${mainConfig.elastic.port}`,
+            httpAuth: `${mainConfig.elastic.user}:${mainConfig.elastic.password}`
+        });
     }
 
     listen() {
@@ -85,31 +95,62 @@ class HPDEngine {
                     feed.json = {};
                 }
 
+                // Add common values
                 feed.json.connection_channel = feed.packetIdentifier;
                 feed.json.timestamp = +new Date();
                 feed.json.sensor = feed.identifier;
 
-                switch(feed.channel) {
-                    case 'dionaea.connections':
-                        console.log(feed.json);
-                        break;
-
-                    case 'dionaea.capture':
-                        feed.json = mapCaptureJson(feed.json);
-                        console.log(feed.json);
-                        break;
-
-                    case 'mwbinary.dionaea.sensorunique':
-                        feed.json.hash = feed.binaryHash;
-
-                        if (feed.binary) {
-                            writePayloadToFile(feed.binaryHash, feed.binary);
-                        }
-                        console.log(feed.json);
-
-                        break;
+                if (feed.channel === 'mwbinary.dionaea.sensorunique') {
+                    this.processBinaryFeed(feed);
+                } else {
+                    this.processJSONFeed(feed);
                 }
         }
+    }
+
+    processBinaryFeed(feed) {
+        feed.json.hash = feed.binaryHash;
+
+        if (feed.binary) {
+            writePayloadToFile(feed.binaryHash, feed.binary);
+
+            // Binaries can be enriched with VirusTotal data
+            getVirusTotalData(feed.json.hash).then(vtdata => {
+                feed.json = Object.assign({}, feed.json, vtdata);
+
+                this.insertIntoElastic(feed.json);
+                sendNotification(feed.json);
+            });
+        }
+    }
+
+    processJSONFeed(feed) {
+        // Remap values to values of 'dionaea.connections' object
+        if (feed.channel === 'dionaea.capture') {
+            feed.json = mapCaptureJson(feed);
+        }
+
+        // Enrich with geodata
+        getGeodata(feed.json.remote_host).then(({latitude, longitude, city, country}) => {
+            feed.json = Object.assign({}, feed.json, {
+                coordinates: [latitude, longitude],
+                longitude,
+                latitude,
+                city,
+                country
+            });
+
+            this.insertIntoElastic(feed);
+        });
+    }
+
+    insertIntoElastic(feed) {
+        // Only insert the .json object inside feed
+        this.esclient.index({
+            index: 'hpfeeds',
+            type: 'feed',
+            body: feed.json
+        });
     }
 }
 
